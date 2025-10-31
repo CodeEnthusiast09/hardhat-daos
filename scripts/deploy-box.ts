@@ -29,7 +29,6 @@ async function main() {
 
     const chainId = network.config.chainId ?? 31337;
 
-    // Path to deployed addresses
     const deploymentPath = path.join(
         __dirname,
         `../ignition/deployments/chain-${chainId}/deployed_addresses.json`,
