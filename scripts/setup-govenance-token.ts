@@ -17,10 +17,12 @@ async function setupContracts() {
 
     const deploymentJson = JSON.parse(fs.readFileSync(deploymentPath, "utf8"));
 
-    // --- TimeLock --
+    // --- TimeLock ---
     const timeLockAddress = deploymentJson["TimeLockModule#TimeLock"];
 
+    // Use TimelockController instead of TimeLock
     const timeLock = await ethers.getContractAt(
+        // "TimelockController",
         "TimeLock",
         timeLockAddress,
         deployer,
@@ -40,7 +42,7 @@ async function setupContracts() {
 
     const proposerRole = await timeLock.PROPOSER_ROLE();
     const executorRole = await timeLock.EXECUTOR_ROLE();
-    const adminRole = await timeLock.TIMELOCK_ADMIN_ROLE();
+    const adminRole = await timeLock.DEFAULT_ADMIN_ROLE();
 
     const governorAddress = await governor.getAddress();
 

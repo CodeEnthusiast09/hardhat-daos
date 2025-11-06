@@ -29,7 +29,7 @@ export async function queueAndExecute() {
     const box = await ethers.getContractAt("Box", boxAddress);
 
     const encodedFunctionCall = box.interface.encodeFunctionData(
-        functionToCall,
+        functionToCall as any,
         args,
     );
 
@@ -48,7 +48,7 @@ export async function queueAndExecute() {
 
     console.log("Queueing...");
     const queueTx = await governor.queue(
-        [box.address],
+        [box.target],
         [0],
         [encodedFunctionCall],
         descriptionHash,
@@ -63,7 +63,7 @@ export async function queueAndExecute() {
     console.log("Executing...");
     // this will fail on a testnet because you need to wait for the MIN_DELAY!
     const executeTx = await governor.execute(
-        [box.address],
+        [box.target],
         [0],
         [encodedFunctionCall],
         descriptionHash,

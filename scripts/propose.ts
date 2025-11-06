@@ -42,11 +42,11 @@ export async function propose(
         args,
     );
 
-    console.log(`Proposing ${functionToCall} on ${box.address} with ${args}`);
+    console.log(`Proposing ${functionToCall} on ${box.target} with ${args}`);
     console.log(`Proposal Description:\n  ${proposalDescription}`);
 
     const proposeTx = await governor.propose(
-        [box.address],
+        [box.target],
         [0],
         [encodedFunctionCall],
         proposalDescription,
@@ -59,7 +59,21 @@ export async function propose(
 
     const proposeReceipt = await proposeTx.wait(1);
 
-    const proposalId = proposeReceipt.events[0].args.proposalId;
+    const proposalCreatedEvent = proposeReceipt?.logs.find((log: any) => {
+        try {
+            const parsed = governor.interface.parseLog(log);
+            return parsed?.name === "ProposalCreated";
+        } catch {
+            return false;
+        }
+    });
+
+    if (!proposalCreatedEvent) {
+        throw new Error("ProposalCreated event not found");
+    }
+
+    const parsedEvent = governor.interface.parseLog(proposalCreatedEvent);
+    const proposalId = parsedEvent?.args.proposalId;
 
     console.log(`Proposed with proposal ID:\n  ${proposalId}`);
 

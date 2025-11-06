@@ -4,7 +4,7 @@ import verify from "../utils/verify";
 import timeLockModule from "../ignition/modules/time-lock";
 
 async function main() {
-    console.log("Deploying Box (with Proxy) Module...");
+    console.log("Deploying TimeLock Module...");
 
     const { network } = hre;
 
@@ -20,7 +20,7 @@ async function main() {
         !developmentChains.includes(network.name) &&
         process.env.ETHERSCAN_API_KEY
     ) {
-        await verify(timeLockAddress, [MIN_DELAY]);
+        await verify(timeLockAddress, [MIN_DELAY, [], []]);
     }
 }
 

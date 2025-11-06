@@ -5,13 +5,24 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import { QUORUM_PERCENTAGE } from "../../helper-hardhat.config";
 import { VOTING_PERIOD } from "../../helper-hardhat.config";
 import { VOTING_DELAY } from "../../helper-hardhat.config";
+import timeLockModule from "./time-lock";
+import governanceTokenModule from "./governance-token";
 
 const governorContractModule = buildModule("GovernorContractModule", (m) => {
     const deployer = m.getAccount(0);
 
+    const { governanceToken } = m.useModule(governanceTokenModule);
+    const { timeLock } = m.useModule(timeLockModule);
+
     const governorContract = m.contract(
         "GovernorContract",
-        [QUORUM_PERCENTAGE, VOTING_PERIOD, VOTING_DELAY],
+        [
+            governanceToken,
+            timeLock,
+            QUORUM_PERCENTAGE,
+            VOTING_PERIOD,
+            VOTING_DELAY,
+        ],
         {
             from: deployer,
         },

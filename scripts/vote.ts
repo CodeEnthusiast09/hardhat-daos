@@ -50,9 +50,29 @@ export async function vote(
         reason,
     );
     const voteTxReceipt = await voteTx.wait(1);
-    console.log(voteTxReceipt.events[0].args.reason);
+
+    const proposalCreatedEvent = voteTxReceipt?.logs.find((log: any) => {
+        try {
+            const parsed = governor.interface.parseLog(log);
+            return parsed?.name === "ProposalCreated";
+        } catch {
+            return false;
+        }
+    });
+
+    if (!proposalCreatedEvent) {
+        throw new Error("ProposalCreated event not found");
+    }
+
+    const parsedEvent = governor.interface.parseLog(proposalCreatedEvent);
+
+    console.log(parsedEvent?.args.proposalId);
+    // console.log(voteTxReceipt.events[0].args.reason);
+
     const proposalState = await governor.state(proposalId);
+
     console.log(`Current Proposal State: ${proposalState}`);
+
     if (developmentChains.includes(network.name)) {
         await moveBlocks(VOTING_PERIOD + 1);
     }

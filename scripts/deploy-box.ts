@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 
 async function main() {
-    console.log("Deploying Box (with Proxy) Module...");
+    console.log("Deploying Box Module...");
 
     const { network } = hre;
 
