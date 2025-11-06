@@ -54,14 +54,14 @@ export async function vote(
     const proposalCreatedEvent = voteTxReceipt?.logs.find((log: any) => {
         try {
             const parsed = governor.interface.parseLog(log);
-            return parsed?.name === "ProposalCreated";
+            return parsed?.name === "VoteCast";
         } catch {
             return false;
         }
     });
 
     if (!proposalCreatedEvent) {
-        throw new Error("ProposalCreated event not found");
+        throw new Error("VoteCast event not found");
     }
 
     const parsedEvent = governor.interface.parseLog(proposalCreatedEvent);
@@ -69,13 +69,13 @@ export async function vote(
     console.log(parsedEvent?.args.proposalId);
     // console.log(voteTxReceipt.events[0].args.reason);
 
-    const proposalState = await governor.state(proposalId);
-
-    console.log(`Current Proposal State: ${proposalState}`);
-
     if (developmentChains.includes(network.name)) {
         await moveBlocks(VOTING_PERIOD + 1);
     }
+
+    const proposalState = await governor.state(proposalId);
+
+    console.log(`Current Proposal State: ${proposalState}`);
 }
 
 main(index)

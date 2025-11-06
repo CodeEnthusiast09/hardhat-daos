@@ -38,24 +38,19 @@ export async function propose(
     const box = await ethers.getContractAt("Box", boxAddress);
 
     const encodedFunctionCall = box.interface.encodeFunctionData(
-        functionToCall,
-        args,
+        functionToCall as any,
+        args as any,
     );
 
     console.log(`Proposing ${functionToCall} on ${box.target} with ${args}`);
     console.log(`Proposal Description:\n  ${proposalDescription}`);
 
     const proposeTx = await governor.propose(
-        [box.target],
+        [boxAddress],
         [0],
         [encodedFunctionCall],
         proposalDescription,
     );
-
-    // If working on a development chain, we will push forward till we get to the voting period.
-    if (developmentChains.includes(network.name)) {
-        await moveBlocks(VOTING_DELAY + 1);
-    }
 
     const proposeReceipt = await proposeTx.wait(1);
 
@@ -77,6 +72,11 @@ export async function propose(
 
     console.log(`Proposed with proposal ID:\n  ${proposalId}`);
 
+    // If working on a development chain, we will push forward till we get to the voting period.
+    if (developmentChains.includes(network.name)) {
+        await moveBlocks(VOTING_DELAY + 1);
+    }
+
     const proposalState = await governor.state(proposalId);
 
     const proposalSnapShot = await governor.proposalSnapshot(proposalId);
@@ -85,11 +85,27 @@ export async function propose(
 
     // save the proposalId
 
-    let proposals = JSON.parse(fs.readFileSync(proposalsFile, "utf8"));
+    // let proposals = JSON.parse(fs.readFileSync(proposalsFile, "utf8"));
 
-    proposals[network.config.chainId!.toString()].push(proposalId.toString());
+    // proposals[network.config.chainId!.toString()].push(proposalId.toString());
 
-    fs.writeFileSync(proposalsFile, JSON.stringify(proposals));
+    // fs.writeFileSync(proposalsFile, JSON.stringify(proposals));
+
+    let proposals: { [key: string]: string[] } = {};
+
+    // Check if file exists, if not create it
+    if (fs.existsSync(proposalsFile)) {
+        proposals = JSON.parse(fs.readFileSync(proposalsFile, "utf8"));
+    }
+
+    // Initialize chain array if it doesn't exist
+    if (!proposals[chainId.toString()]) {
+        proposals[chainId.toString()] = [];
+    }
+
+    proposals[chainId.toString()].push(proposalId.toString());
+
+    fs.writeFileSync(proposalsFile, JSON.stringify(proposals, null, 2));
 
     // The state of the proposal. 1 is not passed. 0 is passed.
     console.log(`Current Proposal State: ${proposalState}`);

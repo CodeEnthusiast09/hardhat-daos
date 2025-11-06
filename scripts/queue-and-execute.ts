@@ -30,7 +30,7 @@ export async function queueAndExecute() {
 
     const encodedFunctionCall = box.interface.encodeFunctionData(
         functionToCall as any,
-        args,
+        args as any,
     );
 
     const descriptionHash = ethers.keccak256(
@@ -47,12 +47,14 @@ export async function queueAndExecute() {
     );
 
     console.log("Queueing...");
+
     const queueTx = await governor.queue(
-        [box.target],
+        [boxAddress],
         [0],
         [encodedFunctionCall],
         descriptionHash,
     );
+
     await queueTx.wait(1);
 
     if (developmentChains.includes(network.name)) {
@@ -61,15 +63,19 @@ export async function queueAndExecute() {
     }
 
     console.log("Executing...");
+
     // this will fail on a testnet because you need to wait for the MIN_DELAY!
     const executeTx = await governor.execute(
-        [box.target],
+        [boxAddress],
         [0],
         [encodedFunctionCall],
         descriptionHash,
     );
+
     await executeTx.wait(1);
+
     const boxNewValue = await box.retrieve();
+
     console.log(boxNewValue.toString());
 }
 
